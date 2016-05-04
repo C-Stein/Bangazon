@@ -16,6 +16,11 @@ namespace Bangazon
             List<string> itemsToOrder = new List<string>();
             Dictionary<int, double> cartPrices = new Dictionary<int, double>();
             double cartTotal = 0.00;
+            string listOfCustomers = "";
+            DateTime localDate = DateTime.Now;
+            string dateCreated = localDate.ToString("en-US");
+            int orderingCustomerInt = 99;
+            int selectedPaymentInt = 0;
 
             StringBuilder MainMenu = new StringBuilder();
             MainMenu.AppendLine("********************************************************");
@@ -31,6 +36,7 @@ namespace Bangazon
             String MainMenuString = MainMenu.ToString();
 
             SqlConnection sqlConnection1 = new SqlConnection("Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=\"C:\\Users\\Caitlin\\Documents\\Invoices.mdf\"");
+            sqlConnection1.Open();
 
 
             while (keepGoing)
@@ -83,7 +89,7 @@ namespace Bangazon
               cmd.CommandType = System.Data.CommandType.Text;
               cmd.CommandText = command;
               cmd.Connection = sqlConnection1;
-              sqlConnection1.Open();
+              //sqlConnection1.Open();
               cmd.ExecuteNonQuery();
                         
                         Console.WriteLine("You've been added!");
@@ -95,7 +101,7 @@ namespace Bangazon
 
                         using (SqlCommand cmd2 = new SqlCommand(customerQuery, sqlConnection1))
                         {
-                            sqlConnection1.Open();
+                            //sqlConnection1.Open();
                             using (SqlDataReader reader = cmd2.ExecuteReader())
                             {
                                 // Check if the reader has any rows at all before starting to read.
@@ -106,7 +112,11 @@ namespace Bangazon
                                     while (reader.Read())
                                     {
                                         count++;
-                                        Console.WriteLine("{0}. {1}", count, reader[0]);
+                                        StringBuilder customers = new StringBuilder();
+                                        string customerLine = string.Format("{0}. {1}", count, reader[0]);
+                                        customers.AppendLine(customerLine);
+                                        listOfCustomers = customers.ToString();
+                                        Console.WriteLine(listOfCustomers);
                                     }
 
                                 }
@@ -152,7 +162,7 @@ namespace Bangazon
                         // Display products available to order
                         using (SqlCommand cmd3 = new SqlCommand(productQuery, sqlConnection1))
                         {
-                            sqlConnection1.Open();
+
                             using (SqlDataReader reader = cmd3.ExecuteReader())
                             {
 
@@ -190,27 +200,6 @@ namespace Bangazon
 
                         }
 
-
-                        //StringBuilder addOrderProduct = new StringBuilder();
-                        //addOrderProduct.Append("INSERT INTO OrderProduct (IdProduct, IdOrder) VALUES (");
-
-                        //addOrderProduct.Append("'" + firstName + "', ");
-                        //addOrderProduct.Append("'" + lastName + "', ");
-                        //addOrderProduct.Append("'" + streetAddress + "', ");
-                        //addOrderProduct.Append("'" + city + "', ");
-                        //addOrderProduct.Append("'" + state + "', ");
-                        //addOrderProduct.Append("'" + PostalCode + "', ");
-                        //addOrderProduct.Append("'" + phoneNumber + "')");
-
-                        //string command = addOrderProduct.ToString();
-
-                        //SqlCommand cmd = new SqlCommand();
-                        //cmd.CommandType = System.Data.CommandType.Text;
-                        //cmd.CommandText = command;
-                        //cmd.Connection = sqlConnection1;
-                        //sqlConnection1.Open();
-                        //cmd.ExecuteNonQuery();
-
                         Console.WriteLine("You've selected items to order!");
 
                         //
@@ -240,20 +229,138 @@ namespace Bangazon
 
                         string answer = Console.ReadLine();
 
-                            // +# If user entered Y
-                            // +Which customer is placing the order?
-                            //+1.John Q.Public
-                            //+ 2.Svetlana Z.Herevazena
-                            //+Choose a payment option
-                            //+ 1.Amex
-                            //+ 2.Visa
+                        if (answer.ToLower() == "y")
+                        {
+                            Console.WriteLine("Which customer is placing the order?");
+                            //Console.WriteLine(listOfCustomers);
+                             string customerQuery2 = "SELECT FirstName + ' ' + LastName as FullName from Customer";
 
-                            //+Your order is complete!Press any key to return to main menu.
+                        using (SqlCommand cmd2 = new SqlCommand(customerQuery2, sqlConnection1))
+                        {
+                            //sqlConnection1.Open();
+                            using (SqlDataReader reader = cmd2.ExecuteReader())
+                            {
+                                // Check if the reader has any rows at all before starting to read.
+                                if (reader.HasRows)
+                                {
+                                    int count = 0;
+                                    // Read advances to the next row.
+                                    while (reader.Read())
+                                    {
+                                        count++;
+                                        StringBuilder customers = new StringBuilder();
+                                        string customerLine = string.Format("{0}. {1}", count, reader[0]);
+                                        customers.AppendLine(customerLine);
+                                        listOfCustomers = customers.ToString();
+                                        Console.WriteLine(listOfCustomers);
+                                    }
 
-                            //+# If user entered N, display the main menu again
+                                }
+                            }
+                        }
 
-                        //How would you like your items shipped?
+                            string orderingCustomer = Console.ReadLine();
+                            orderingCustomerInt = int.Parse(orderingCustomer);
+                            Console.WriteLine("Choose a payment option");
+                            int orderingCustomerNumber = int.Parse(orderingCustomer);
+                            string selectPaymentQuery = "SELECT IdPaymentOptions, Name from PaymentOptions WHERE IdCustomer = " + orderingCustomerNumber;
 
+                            using (SqlCommand cmd2 = new SqlCommand(selectPaymentQuery, sqlConnection1))
+                            {
+                                //sqlConnection1.Open();
+                                using (SqlDataReader reader = cmd2.ExecuteReader())
+                                {
+                                    // Check if the reader has any rows at all before starting to read.
+                                    if (reader.HasRows)
+                                    {
+                                        // Read advances to the next row.
+                                        while (reader.Read())
+                                        {
+                                            Console.WriteLine("{0}. {1}", reader[0], reader[1]);
+
+                                        }
+
+                                    }
+                                }
+                             }
+
+                            string selectedPayment = Console.ReadLine();
+                            selectedPaymentInt = int.Parse(selectedPayment);
+                            Console.WriteLine("Your order is complete!Press any key to return to main menu.");
+                            Console.ReadKey();
+
+                                    //+
+
+                                    //+# If user entered N, display the main menu again
+
+                                    //How would you like your items shipped?
+                                } else if (answer.ToLower() == "n")
+                        {
+                            Console.WriteLine("Press any key to return to the main menu");
+                            Console.ReadKey();
+                        } else
+                        {
+                            Console.WriteLine("The choices are 'Y' or 'N'. Why would you press anything else?");
+                            Console.WriteLine("Press any key to return to the main menu");
+                            Console.ReadKey();
+                        }
+
+                        //The SQL Magic:
+                        StringBuilder createNewOrder = new StringBuilder();
+                        createNewOrder.Append("INSERT INTO CustomerOrder (DateCreated, IdCustomer, IdPaymentOptions, Shipping) VALUES (");
+
+                        createNewOrder.Append("'" + dateCreated + "', ");
+                        createNewOrder.Append("'" + orderingCustomerInt + "', ");
+                        createNewOrder.Append("'" + selectedPaymentInt + "', ");
+                        createNewOrder.Append("'None selected')");
+
+                        string newOrderQuery = createNewOrder.ToString();
+
+                        SqlCommand orderCmd = new SqlCommand();
+                       orderCmd.CommandType = System.Data.CommandType.Text;
+                       orderCmd.CommandText = newOrderQuery;
+                       orderCmd.Connection = sqlConnection1;
+                        //sqlConnection1.Open();
+                       orderCmd.ExecuteNonQuery();
+
+                        //figure out which order to add  products to
+
+                        string lastOrderAddedQuery = "SELECT IdCustomerOrder from CustomerOrder";
+                        int lastOrderId = 99;
+                        using (SqlCommand cmd2 = new SqlCommand(lastOrderAddedQuery, sqlConnection1))
+                        {
+                            //sqlConnection1.Open();
+                            using (SqlDataReader reader = cmd2.ExecuteReader())
+                            {
+                                // Check if the reader has any rows at all before starting to read.
+                                if (reader.HasRows)
+                                {
+                                    // Read advances to the next row.
+                                    while (reader.Read())
+                                    {
+                                        lastOrderId = reader.GetInt32(0);
+
+                                    }
+
+                                }
+                            }
+                        }
+
+                        //loop through all products in cart and add to orderProduct table
+
+
+                        foreach (string product in itemsToOrder)
+                        {
+                            int productid = int.Parse(product) - 1;
+                            String insertItemsQuery = "INSERT INTO OrderProduct (IdProduct, IdOrder) VALUES ('" + productid + "','" + lastOrderId + "')" ;
+
+                            SqlCommand insertCmd = new SqlCommand();
+                            insertCmd.CommandType = System.Data.CommandType.Text;
+                            insertCmd.CommandText = insertItemsQuery;
+                            insertCmd.Connection = sqlConnection1;
+                            //sqlConnection1.Open();
+                            insertCmd.ExecuteNonQuery();
+                        }
                         continue;
                     case "5": //See product popularity
                         continue;
