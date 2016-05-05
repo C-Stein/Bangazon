@@ -363,6 +363,34 @@ namespace Bangazon
                         }
                         continue;
                     case "5": //See product popularity
+                              //                        AA Batteries ordered 10 times by 2 customers for total revenue of $99.90
+                              //Diapers ordered 5 times by 1 customers for total revenue of $64.95
+                              //Case of Cracking Cola ordered 4 times by 3 customers for total revenue of $27.96
+
+                        //->Press any key to return to main menu
+                        string popularityQuery = "SELECT  Product.Name, COUNT(OrderProduct.IdProduct) AS 'How Many Times Ordered', COUNT(DISTINCT CustomerOrder.IdCustomer) AS Customers, ROUND(SUM(Product.Price), 2) AS Total FROM Product JOIN OrderProduct ON Product.IdProduct = OrderProduct.IdProduct JOIN CustomerOrder ON OrderProduct.IdOrder = CustomerOrder.IdCustomerOrder GROUP BY Product.Name";
+
+                        using (SqlCommand cmd2 = new SqlCommand(popularityQuery, sqlConnection1))
+                        {
+                            //sqlConnection1.Open();
+                            using (SqlDataReader reader = cmd2.ExecuteReader())
+                            {
+                                // Check if the reader has any rows at all before starting to read.
+                                if (reader.HasRows)
+                                {
+                                    // Read advances to the next row.
+                                    while (reader.Read())
+                                    {
+                                        Console.WriteLine("{0} ordered {1} times by {2} customers for total revenue of {3}", reader[0], reader[1], reader[2], reader[3]);
+
+                                    }
+
+                                }
+                            }
+                        }
+                        Console.WriteLine("press any key to retun to the main menu");
+                        Console.ReadKey();
+
                         continue;
 
                     case "6": //Exit
